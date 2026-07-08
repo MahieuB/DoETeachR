@@ -1,0 +1,53 @@
+#' Generate Full Factorial Design (FFD)
+#'
+#' Generates a Full Factorial Design (FFD) according to the specified parameters.
+#'
+#' @param responses A character vector specifying the name(s) of the response(s).
+#' @param factors A character vector specifying the names of the factors.
+#' @param ncenter The number of center points to be added in the design.
+#' @param randomize Logical, if TRUE, runs are randomized.
+#'
+#' @returns A data.frame where each row corresponds to a run, the first `length(factors)` columns are the factors and the last columns are the responses filled with `NA`.
+#'
+#'
+#'
+#' @export
+#'
+#' @examples
+#' gen.FFD(responses=c("R1"),factors=LETTERS[1:4])
+
+gen.FFD=function(responses,factors,ncenter=0,randomize=FALSE){
+  if (!is.character(responses)){
+    stop("class(responses) must be cheracter")
+  }
+  if (is.character(factors)){
+    if (length(factors)<2){
+      stop("length(factors) must be larger than or equal to 2" )
+    }
+  }else{
+    stop("class(factors) must be cheracter")
+  }
+  if (is.numeric(ncenter) | is.integer(ncenter)){
+    if (ncenter<0 | ncenter%%1!=0){
+      stop("ncenter must be a positive integer")
+    }
+  }else{
+    stop("class(ncenter) must be numeric or integer")
+  }
+  if (!is.logical(randomize)){
+    stop("class(randomize) must be logical")
+  }
+  D=expand.grid(replicate(length(factors),c(-1,1),simplify = FALSE)) ; colnames(D)=factors
+  if (ncenter>0){
+    zero=as.data.frame(matrix(0,ncenter,ncol(D))) ; colnames(zero)=colnames(D)
+    D=rbind(D,zero)
+  }
+  if (randomize){
+    D=D[sample(1:nrow(D)),]
+  }
+  re=cbind.data.frame(D,matrix(NA,nrow(D),length(responses))) ; colnames(re)[-c(1:ncol(D))]=responses
+  class(re)=c("DoETeachR","data.frame")
+  attr(re,"colonne")=c(rep("factor",length(factors)),rep("response",length(responses)))
+  attr(re,"type")="FFD"
+  return(re)
+}

@@ -1,0 +1,18 @@
+Package: DoETeachR
+Title: Design of Experiments for Higher Education
+Version: 1.2.2
+Authors@R: 
+    c(person(given = "Benjamin",family = "Mahieu",role = c("aut","cre"),email = "benjamin.mahieu@oniris-nantes.fr"),
+      person(given = "Jean-Michel",family = "Galharret",role = c("aut"),email = "jean-michel.galharret@oniris-nantes.fr"))
+Description: A collection of functions for higher education of basic designs of experiments namely full factorial designs, fractional factorial designs, central composite designs and mixing designs.
+License: GPL (>= 3)
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+Imports: 
+    GA,
+    ggplot2,
+    ggrepel,
+    grDevices,
+    MASS,
+    stats
+Config/roxygen2/version: 8.0.0
