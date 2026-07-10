@@ -10,7 +10,6 @@
 #' @returns A list if length two where the first element is the optimal values of the factors and the second element is the value of the response obtained at the optimal values of the factors.
 #'
 #' @import stats
-#' @import GA
 #'
 #' @export
 #'
@@ -75,28 +74,38 @@ OptimDesign=function(formula,design,bounds=NULL,target.optim="min"){
       return(y)
     }
     if (target.optim=="max"){
-      ag=ga(type="real-valued",fitness = fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-      #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+      y.opti=-Inf
+      x.pure=unique(x[,factor.name,drop=FALSE])
+      for (i in 1:nrow(x.pure)){
+        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+        if (opti.i$value>y.opti){
+          opti=opti.i
+          y.opti=opti$value
+        }
+      }
     }else{
-      ag=ga(type="real-valued",fitness = function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-      #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+      y.opti=Inf
+      x.pure=unique(x[,factor.name,drop=FALSE])
+      for (i in 1:nrow(x.pure)){
+        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+        if (opti.i$value<y.opti){
+          opti=opti.i
+          y.opti=opti$value
+        }
+      }
     }
   }else{
     fopt=function(vec){
       pseudo.D=as.data.frame(t(as.matrix(vec))) ; colnames(pseudo.D)=factor.name ;pseudo.formula=as.formula(paste(as.character(formula)[1],as.character(formula)[3],sep=""))
       pseudo.mat=model.matrix(pseudo.formula,pseudo.D)
       y=as.numeric(as.matrix(pseudo.mat)%*%b[colnames(pseudo.mat)])
-      return((y-target.optim)^2)
+      return(sqrt((y-target.optim)^2))
     }
     opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
   }
   if (is.character(target.optim)){
-    retour.x=as.vector(ag@solution) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
-    if (target.optim=="max"){
-      retour.y=ag@fitnessValue
-    }else{
-      retour.y=-ag@fitnessValue
-    }
+    retour.x=as.vector(opti$par) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
+    retour.y=opti$value
   }else{
     retour.x=as.vector(opti$par) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
     vec=as.vector(opti$par)

@@ -15,7 +15,6 @@
 #' @import ggrepel
 #' @import stats
 #' @import grDevices
-#' @import GA
 #'
 #' @export
 #'
@@ -117,20 +116,34 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
         return(y)
       }
       if (target.optim=="max"){
-        ag=ga(type="real-valued",fitness = fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-        #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+        y.opti=-Inf
+        x.pure=unique(x[,factor.name,drop=FALSE])
+        for (i in 1:nrow(x.pure)){
+          opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+          if (opti.i$value>y.opti){
+            opti=opti.i
+            y.opti=opti$value
+          }
+        }
       }else{
-        ag=ga(type="real-valued",fitness = function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-        #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+        y.opti=Inf
+        x.pure=unique(x[,factor.name,drop=FALSE])
+        for (i in 1:nrow(x.pure)){
+          opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+          if (opti.i$value<y.opti){
+            opti=opti.i
+            y.opti=opti$value
+          }
+        }
       }
-      opti.value=as.vector(ag@solution) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
+      opti.value=as.vector(opti$par) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
       grille=cbind(grille,as.matrix(rep(1,nrow(grille)))%*%t(as.matrix(opti.value[!names(opti.value)%in%plotted.factors])))
     }else{
       fopt=function(vec){
         pseudo.D=as.data.frame(t(as.matrix(vec))) ; colnames(pseudo.D)=factor.name ;pseudo.formula=as.formula(paste(as.character(formula)[1],as.character(formula)[3],sep=""))
         pseudo.mat=model.matrix(pseudo.formula,pseudo.D)
         y=as.numeric(as.matrix(pseudo.mat)%*%b[colnames(pseudo.mat)])
-        return((y-target.optim)^2)
+        return(sqrt((y-target.optim)^2))
       }
       opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
       opti.value=as.vector(opti$par) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
@@ -165,12 +178,28 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
       return(y)
     }
     if (target.optim=="max"){
-      ag=ga(type="real-valued",fitness = fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-      #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+      y.opti=-Inf
+      x.pure=unique(x[,factor.name,drop=FALSE])
+      for (i in 1:nrow(x.pure)){
+        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
+        if (opti.i$value>y.opti){
+          opti=opti.i
+          y.opti=opti$value
+        }
+      }
     }else{
-      ag=ga(type="real-valued",fitness = function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 200,optim = TRUE,optimArgs = list(poptim=0.5,pressel=0.5),run=10,monitor=FALSE)
-      #opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+      y.opti=Inf
+      x.pure=unique(x[,factor.name,drop=FALSE])
+      for (i in 1:nrow(x.pure)){
+        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
+        if (opti.i$value<y.opti){
+          opti=opti.i
+          y.opti=opti$value
+        }
+      }
     }
+    opti.value=as.vector(opti$par) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
+    grille=cbind(grille,as.matrix(rep(1,nrow(grille)))%*%t(as.matrix(opti.value[!names(opti.value)%in%plotted.factors])))
   }else{
     fopt=function(vec){
       pseudo.D=as.data.frame(t(as.matrix(vec))) ; colnames(pseudo.D)=factor.name ;pseudo.formula=as.formula(paste(as.character(formula)[1],as.character(formula)[3],sep=""))
@@ -181,14 +210,14 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
     opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
   }
   if (is.character(target.optim)){
-    point.optim=as.vector(ag@solution) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
+    point.optim=as.vector(opti$par) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
   }else{
     point.optim=as.vector(opti$par) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
   }
   point.optim=as.data.frame(t(as.matrix(point.optim)))
   suppressWarnings({g=g+geom_point(point.optim,mapping=aes(x=point.optim[,1],y=point.optim[,2],z=0),size=3.5,color="green4")})
   suppressWarnings({g=g+geom_label_repel(point.optim,mapping=aes(x=point.optim[,1],y=point.optim[,2],label="Target",z=0),label.size=NA,colour="green4",size=5,segment.size=1,label.padding = 0.15,fill="black",
-                       min.segment.length = 0,nudge_x = -sign(point.optim[,1])*0.125,nudge_y = -sign(point.optim[,2])*0.125)})
+                                         min.segment.length = 0,nudge_x = -sign(point.optim[,1])*0.125,nudge_y = -sign(point.optim[,2])*0.125)})
   return(g)
 }
 

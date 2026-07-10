@@ -1,6 +1,6 @@
 Package: DoETeachR
 Title: Design of Experiments for Higher Education
-Version: 1.2.2
+Version: 1.3.0
 Authors@R: 
     c(person(given = "Benjamin",family = "Mahieu",role = c("aut","cre"),email = "benjamin.mahieu@oniris-nantes.fr"),
       person(given = "Jean-Michel",family = "Galharret",role = c("aut"),email = "jean-michel.galharret@oniris-nantes.fr"))
@@ -9,7 +9,6 @@ License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Imports: 
-    GA,
     ggplot2,
     ggrepel,
     grDevices,
