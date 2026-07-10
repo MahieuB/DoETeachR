@@ -75,7 +75,7 @@ OptimDesign=function(formula,design,bounds=NULL,target.optim="min"){
     }
     if (target.optim=="max"){
       y.opti=-Inf
-      x.pure=unique(x[,factor.name,drop=FALSE])
+      x.pure=unique(x[(x%*%b)>quantile(x%*%b,probs = 0.75,type=5),factor.name,drop=FALSE])
       for (i in 1:nrow(x.pure)){
         opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
         if (opti.i$value>y.opti){
@@ -85,7 +85,7 @@ OptimDesign=function(formula,design,bounds=NULL,target.optim="min"){
       }
     }else{
       y.opti=Inf
-      x.pure=unique(x[,factor.name,drop=FALSE])
+      x.pure=unique(x[(x%*%b)<quantile(x%*%b,probs = 0.25,type=5),factor.name,drop=FALSE])
       for (i in 1:nrow(x.pure)){
         opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
         if (opti.i$value<y.opti){

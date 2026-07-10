@@ -117,7 +117,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
       }
       if (target.optim=="max"){
         y.opti=-Inf
-        x.pure=unique(x[,factor.name,drop=FALSE])
+        x.pure=unique(x[(x%*%b)>quantile(x%*%b,probs = 0.75,type=5),factor.name,drop=FALSE])
         for (i in 1:nrow(x.pure)){
           opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
           if (opti.i$value>y.opti){
@@ -127,7 +127,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
         }
       }else{
         y.opti=Inf
-        x.pure=unique(x[,factor.name,drop=FALSE])
+        x.pure=unique(x[(x%*%b)<quantile(x%*%b,probs = 0.25,type=5),factor.name,drop=FALSE])
         for (i in 1:nrow(x.pure)){
           opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
           if (opti.i$value<y.opti){
@@ -179,7 +179,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
     }
     if (target.optim=="max"){
       y.opti=-Inf
-      x.pure=unique(x[,factor.name,drop=FALSE])
+      x.pure=unique(x[(x%*%b)>quantile(x%*%b,probs = 0.75,type=5),factor.name,drop=FALSE])
       for (i in 1:nrow(x.pure)){
         opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
         if (opti.i$value>y.opti){
@@ -189,7 +189,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
       }
     }else{
       y.opti=Inf
-      x.pure=unique(x[,factor.name,drop=FALSE])
+      x.pure=unique(x[(x%*%b)<quantile(x%*%b,probs = 0.25,type=5),factor.name,drop=FALSE])
       for (i in 1:nrow(x.pure)){
         opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
         if (opti.i$value<y.opti){
@@ -205,7 +205,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
       pseudo.D=as.data.frame(t(as.matrix(vec))) ; colnames(pseudo.D)=factor.name ;pseudo.formula=as.formula(paste(as.character(formula)[1],as.character(formula)[3],sep=""))
       pseudo.mat=model.matrix(pseudo.formula,pseudo.D)
       y=as.numeric(as.matrix(pseudo.mat)%*%b[colnames(pseudo.mat)])
-      return((y-target.optim)^2)
+      return(sqrt((y-target.optim)^2))
     }
     opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
   }

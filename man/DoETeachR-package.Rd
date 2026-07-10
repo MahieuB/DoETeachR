@@ -6,7 +6,7 @@
 \alias{DoETeachR-package}
 \title{DoETeachR: Design of Experiments for Higher Education}
 \description{
-A collection of functions for higher education of basic designs of experiments namely full factorial designs, fractional factorial designs, central composite designs and mixing designs.
+A collection of functions for higher education of basic designs of experiments namely full factorial designs, fractional factorial designs and central composite designs.
 }
 \author{
 \strong{Maintainer}: Benjamin Mahieu \email{benjamin.mahieu@oniris-nantes.fr}
@@ -14,7 +14,6 @@ A collection of functions for higher education of basic designs of experiments n
 Authors:
 \itemize{
   \item Benjamin Mahieu \email{benjamin.mahieu@oniris-nantes.fr}
-  \item Jean-Michel Galharret \email{jean-michel.galharret@oniris-nantes.fr}
 }
 
 }
