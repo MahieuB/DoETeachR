@@ -1,6 +1,6 @@
 Package: DoETeachR
 Title: Design of Experiments for Higher Education
-Version: 1.4.0
+Version: 1.4.1
 Authors@R: 
     c(person(given = "Benjamin",family = "Mahieu",role = c("aut","cre"),email = "benjamin.mahieu@oniris-nantes.fr"))
 Description: A collection of functions for higher education of basic designs of experiments namely full factorial designs, fractional factorial designs and central composite designs.
