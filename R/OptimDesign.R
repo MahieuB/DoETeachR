@@ -10,6 +10,7 @@
 #' @returns A list if length two where the first element is the optimal values of the factors and the second element is the value of the response obtained at the optimal values of the factors.
 #'
 #' @import stats
+#' @import GA
 #'
 #' @export
 #'
@@ -74,25 +75,9 @@ OptimDesign=function(formula,design,bounds=NULL,target.optim="min"){
       return(y)
     }
     if (target.optim=="max"){
-      y.opti=-Inf
-      x.pure=unique(x[(x%*%b)>=quantile(x%*%b,probs = 0.60,type=5),factor.name,drop=FALSE])
-      for (i in 1:nrow(x.pure)){
-        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
-        if (opti.i$value>y.opti){
-          opti=opti.i
-          y.opti=opti$value
-        }
-      }
+      ag=ga(type="real-valued",fitness=fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
     }else{
-      y.opti=Inf
-      x.pure=unique(x[(x%*%b)<=quantile(x%*%b,probs = 0.40,type=5),factor.name,drop=FALSE])
-      for (i in 1:nrow(x.pure)){
-        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
-        if (opti.i$value<y.opti){
-          opti=opti.i
-          y.opti=opti$value
-        }
-      }
+      ag=ga(type="real-valued",fitness=function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
     }
   }else{
     fopt=function(vec){
@@ -104,8 +89,13 @@ OptimDesign=function(formula,design,bounds=NULL,target.optim="min"){
     opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
   }
   if (is.character(target.optim)){
-    retour.x=as.vector(opti$par) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
-    retour.y=opti$value
+    if (target.optim=="max"){
+      retour.x=as.vector(ag@solution[1,]) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
+      retour.y=ag@fitnessValue
+    }else{
+      retour.x=as.vector(ag@solution[1,]) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
+      retour.y=-ag@fitnessValue
+    }
   }else{
     retour.x=as.vector(opti$par) ; names(retour.x)=factor.name ; retour.x=round(retour.x,3)
     vec=as.vector(opti$par)

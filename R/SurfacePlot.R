@@ -15,6 +15,7 @@
 #' @import ggrepel
 #' @import stats
 #' @import grDevices
+#' @import GA
 #'
 #' @export
 #'
@@ -116,27 +117,11 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
         return(y)
       }
       if (target.optim=="max"){
-        y.opti=-Inf
-        x.pure=unique(x[(x%*%b)>=quantile(x%*%b,probs = 0.60,type=5),factor.name,drop=FALSE])
-        for (i in 1:nrow(x.pure)){
-          opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
-          if (opti.i$value>y.opti){
-            opti=opti.i
-            y.opti=opti$value
-          }
-        }
+        ag=ga(type="real-valued",fitness=fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
       }else{
-        y.opti=Inf
-        x.pure=unique(x[(x%*%b)<=quantile(x%*%b,probs = 0.40,type=5),factor.name,drop=FALSE])
-        for (i in 1:nrow(x.pure)){
-          opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
-          if (opti.i$value<y.opti){
-            opti=opti.i
-            y.opti=opti$value
-          }
-        }
+        ag=ga(type="real-valued",fitness=function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
       }
-      opti.value=as.vector(opti$par) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
+      opti.value=as.vector(ag@solution[1,]) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
       grille=cbind(grille,as.matrix(rep(1,nrow(grille)))%*%t(as.matrix(opti.value[!names(opti.value)%in%plotted.factors])))
     }else{
       fopt=function(vec){
@@ -158,7 +143,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
   x.grille=model.matrix(x.formula,grille)
   z.grille=x.grille%*%b[colnames(x.grille)]
   df.plot=data.frame(grille[,plotted.factors],z=z.grille)
-  grille.rupture=expand.grid(replicate(length(factor.name),seq(bounds[1],bounds[2],length.out=floor(exp(log(500^2)/length(factor.name)))),simplify = FALSE)) ; colnames(grille.rupture)=factor.name
+  grille.rupture=expand.grid(replicate(length(factor.name),seq(bounds[1],bounds[2],length.out=ceiling(exp(log(500^2)/length(factor.name)))),simplify = FALSE)) ; colnames(grille.rupture)=factor.name
   x.rupture=model.matrix(x.formula,grille.rupture)
   z.rupture=x.rupture%*%b[colnames(x.rupture)]
   rupture=quantile(z.rupture,probs=seq(0,1,by=0.05),type=5)
@@ -178,28 +163,10 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
       return(y)
     }
     if (target.optim=="max"){
-      y.opti=-Inf
-      x.pure=unique(x[(x%*%b)>=quantile(x%*%b,probs = 0.60,type=5),factor.name,drop=FALSE])
-      for (i in 1:nrow(x.pure)){
-        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=-1))
-        if (opti.i$value>y.opti){
-          opti=opti.i
-          y.opti=opti$value
-        }
-      }
+      ag=ga(type="real-valued",fitness=fopt,lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
     }else{
-      y.opti=Inf
-      x.pure=unique(x[(x%*%b)<=quantile(x%*%b,probs = 0.40,type=5),factor.name,drop=FALSE])
-      for (i in 1:nrow(x.pure)){
-        opti.i=optim(x.pure[i,],fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
-        if (opti.i$value<y.opti){
-          opti=opti.i
-          y.opti=opti$value
-        }
-      }
+      ag=ga(type="real-valued",fitness=function(vec) -fopt(vec),lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),popSize = 100,pcrossover = 1,pmutation = 1,run=20,optim = TRUE,optimArgs = list(poptim = 1,pressel = 0.5),suggestions = x[,factor.name,drop=FALSE],monitor = FALSE,seed=487)
     }
-    opti.value=as.vector(opti$par) ; names(opti.value)=factor.name  ; opti.value=round(opti.value,3)
-    grille=cbind(grille,as.matrix(rep(1,nrow(grille)))%*%t(as.matrix(opti.value[!names(opti.value)%in%plotted.factors])))
   }else{
     fopt=function(vec){
       pseudo.D=as.data.frame(t(as.matrix(vec))) ; colnames(pseudo.D)=factor.name ;pseudo.formula=as.formula(paste(as.character(formula)[1],as.character(formula)[3],sep=""))
@@ -210,7 +177,7 @@ SurfacePlot=function(formula,design,plotted.factors=NULL,bounds=NULL,target.opti
     opti=optim(rep(0,length(factor.name)),fopt,method = "L-BFGS-B",lower=rep(bounds[1],length(factor.name)),upper=rep(bounds[2],length(factor.name)),control = list(fnscale=1))
   }
   if (is.character(target.optim)){
-    point.optim=as.vector(opti$par) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
+    point.optim=as.vector(ag@solution[1,]) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
   }else{
     point.optim=as.vector(opti$par) ; names(point.optim)=factor.name ; point.optim=point.optim[plotted.factors]
   }
