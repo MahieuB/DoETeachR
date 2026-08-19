@@ -4,7 +4,7 @@
 \alias{EffectsPlot}
 \title{Plot Effects of \pkg{DoETeachR} objects}
 \usage{
-EffectsPlot(formula, design, effects = "direct")
+EffectsPlot(formula, design, effects = "direct", bounds = NULL)
 }
 \arguments{
 \item{formula}{A formula that defines the model. Only order two effects are supported at maximum.}
@@ -12,6 +12,8 @@ EffectsPlot(formula, design, effects = "direct")
 \item{design}{A design from \code{\link[DoETeachR]{gen.FrFD}}, \code{\link[DoETeachR]{gen.FFD}} or \code{\link[DoETeachR]{gen.CCD}}.}
 
 \item{effects}{Either \code{"direct"} or \code{"interaction"} specifying if direct or interaction effects must be plotted.}
+
+\item{bounds}{Either NULL (Default) or a numeric vector of length two defining the range of values that must be considered for the factors. If NULL, the range of values for the factors are the minimum and maximum values of the plotted factors present in \bold{formula}.}
 }
 \value{
 An effect plot
